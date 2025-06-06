@@ -10,6 +10,66 @@ Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Html.html to edit thi
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body>
-        <div>TODO write content</div>
+        
+        <h2>Calculadora con Web Service</h2>
+        
+        <form id="calcForm">
+            Numero 1: <input type="number" id="dato" required><br>
+            Numero 2: <input type="number" id="dato1" required><br>
+            
+            Operacion:
+            <select id="con">
+                <option value="1">Restar</option>
+                <option value="2">Sumar</option>
+                <option value="3">Multiplicar</option>
+            </select><br><br>
+            <button type="button" onclick="llamarWS()">Calcular</button>
+            
+            
+            
+        </form>
+        
+        <<h3 id="resultado"></h3>
+        <script>
+        function llamarWS() {
+            const dato = document.getElementById("dato").value;
+            const dato1 = document.getElementById("dato1").value;
+            const con = document.getElementById("con").value;
+
+            const soapRequest = `
+                <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ws="http://WS/">
+                    <soapenv:Header/>
+                    <soapenv:Body>
+                        <ws:Calculadora>
+                            <dato>${dato}</dato>
+                            <dato1>${dato1}</dato1>
+                            <con>${con}</con>
+                        </ws:Calculadora>
+                    </soapenv:Body>
+                </soapenv:Envelope>`;
+
+            fetch("http://localhost:8080/WebService/Calculadora", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "text/xml;charset=UTF-8",
+                    "SOAPAction": ""
+                },
+                body: soapRequest
+            })
+            .then(response => response.text())
+            .then(str => {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(str, "text/xml");
+                const result = xmlDoc.getElementsByTagName("return")[0].textContent;
+                document.getElementById("resultado").innerText = "Resultado: " + result;
+            })
+            .catch(error => {
+                console.error("Error al llamar el servicio:", error);
+                document.getElementById("resultado").innerText = "Error al llamar el servicio.";
+            });
+        }
+        </script>
+        
+        
     </body>
 </html>
